@@ -38,11 +38,17 @@ local get_semantic_search_output = function(args, opts)
 	)
 	Log("Finished processing the semantic search output")
 	Log(result, true)
+	Log("Parsing the semantic search output")
+	Log(result[1], true)
+
+	-- Replace single quotes with double quotes and escape the inner double quotes
+	local corrected_str = string.gsub(result[1], "'", '"')
+	-- Convert the corrected JSON string to a Lua table
+	local lua_table = vim.fn.json_decode(corrected_str)
+
+	Log("Finished json decode")
+	Log(lua_table, true)
 	return result
-	--P(result, true)
-	--local cmd = { "find", ".", "-type", "f", "-name", "*.*" }
-	--local cmd = { "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" }
-	--return cmd
 end
 
 Log("Hello")
@@ -65,10 +71,12 @@ local colors = function(opts)
 					return get_semantic_search_output(prompt_text, opts)
 				end,
 				entry_maker = function(line)
+					Log("\nGot line:")
+					Log(line, true)
 					return {
-						value = line,
-						ordinal = line,
-						display = line,
+						value = line[2],
+						ordinal = line[2],
+						display = line[2],
 					}
 				end,
 			}),
