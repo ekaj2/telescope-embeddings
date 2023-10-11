@@ -123,50 +123,52 @@ local semantic_picker = function(opts)
 		:find()
 end
 
---local previewers = require("telescope.previewers")
---
---local new_maker = function(filepath, bufnr, opts)
---	opts = opts or {}
---
---	filepath = vim.fn.expand(filepath)
---	vim.loop.fs_stat(filepath, function(_, stat)
---		if not stat then
---			return
---		end
---		if stat.size > 100000 then
---			return
---		else
---			previewers.buffer_previewer_maker(filepath, bufnr, opts)
---		end
---	end)
---end
+local previewers = require("telescope.previewers")
+
+local new_maker = function(filepath, bufnr, opts)
+	opts = opts or {}
+
+	filepath = vim.fn.expand(filepath)
+	vim.loop.fs_stat(filepath, function(_, stat)
+		if not stat then
+			return
+		end
+		if stat.size > 100000 then
+			return
+		else
+			previewers.buffer_previewer_maker(filepath, bufnr, opts)
+		end
+	end)
+end
 
 --semantic_picker(themes.get_dropdown({}))
-semantic_picker(require("telescope.themes").get_dropdown({}))
+--semantic_picker(require("telescope.themes").get_dropdown({}))
 
---semantic_picker(themes.get_ivy({
---
---	buffer_previewer_maker = new_maker,
---	-- see: https://github.com/nvim-telescope/telescope.nvim/issues/1379#issuecomment-996590765
---	preview = {
---		treesitter = false,
---	},
---	log_level = "debug",
---	mappings = {
---		i = {
---			["<C-c>"] = require("telescope.actions").close,
---		},
---		n = {
---			["<C-c>"] = require("telescope.actions").close,
---		},
---	},
---	--layout_strategy = "vertical",
---	--layout_config = {
---	--	width = 0.9,
---	--	height = 0.9,
---	--	prompt_position = "bottom",
---	--},
---}))
+semantic_picker({
+	defaults = {
+
+		buffer_previewer_maker = new_maker,
+		-- see: https://github.com/nvim-telescope/telescope.nvim/issues/1379#issuecomment-996590765
+		preview = {
+			treesitter = false,
+		},
+		log_level = "debug",
+		mappings = {
+			i = {
+				["<C-c>"] = require("telescope.actions").close,
+			},
+			n = {
+				["<C-c>"] = require("telescope.actions").close,
+			},
+		},
+		layout_strategy = "horizontal",
+		layout_config = {
+			width = 0.6,
+			height = 0.6,
+			--prompt_position = "bottom",
+		},
+	},
+})
 
 P("--------------------------------------------------")
 --get_semantic_search_output({}, {})
