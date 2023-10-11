@@ -51,8 +51,9 @@ local get_semantic_search_output = function(args, opts)
 	Log("\nBuilding updated list:")
 	for _, line in ipairs(lua_table) do
 		Log(line, true)
-		local similarity = line[1]
+		local similarity = math.floor(line[1] * 10000)
 		local filename = line[2]
+		local short_filename = filename:match("([^/]+)$")
 		local linenum = line[3]
 		local code = line[4]
 		Log("Similarity: " .. tostring(similarity))
@@ -61,8 +62,8 @@ local get_semantic_search_output = function(args, opts)
 		Log("Code: " .. tostring(code))
 		table.insert(results, {
 			value = code,
-			ordinal = code,
-			display = filename .. ":" .. linenum .. ": " .. code .. " (" .. similarity .. ")",
+			ordinal = similarity,
+			display = short_filename .. ":" .. linenum .. ": " .. code .. " (" .. similarity .. ")",
 			filename = filename,
 			lnum = linenum,
 		})
@@ -98,7 +99,7 @@ local colors = function(opts)
 					Log(line, true)
 					return {
 						value = line.filename,
-						ordinal = line.filename,
+						ordinal = line.ordinal,
 						display = line.display,
 					}
 				end,
@@ -117,9 +118,8 @@ local colors = function(opts)
 			-- 		}
 			-- 	end,
 			-- }),
-			sorter = conf.generic_sorter(opts),
-			--Or:
-			--sorter = conf.file_sorter(opts),
+			-- I think I can get by without a sorter b/c I have an int ordinal?
+			--sorter = conf.generic_sorter(opts),
 			previewer = previewers.new_buffer_previewer({
 				define_preview = function(self, entry, status)
 					self.state.bufnr = vim.api.nvim_create_buf(false, true)
