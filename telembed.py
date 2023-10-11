@@ -1,30 +1,8 @@
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
-local utils = require("telescope.utils")
 
 local previewers = require("telescope.previewers")
-
-P = function(x, inspect)
-	inspect = inspect or false
-	vim.api.nvim_echo({ { tostring(x), "None" } }, false, {})
-
-	if inspect then
-		P(vim.inspect(x))
-	end
-end
-
-local get_semantic_search_output = function(args, opts)
-	P(opts, true)
-	-- .. args[1] may be the prompt?
-	-- print out this result
-	P("Getting the semantic search output")
-	local result = utils.get_os_command_output({ "find", ".", "-type", "f", "-name", "*.py" }, opts.cwd)
-	P(result, true)
-	--local cmd = { "find", ".", "-type", "f", "-name", "*.*" }
-	local cmd = { "~/reddy/semantic-code-search/venv/bin/sem", "test" }
-	return cmd
-end
 
 -- our picker function: colors
 local colors = function(opts)
@@ -32,7 +10,9 @@ local colors = function(opts)
 	pickers
 		.new(opts, {
 			prompt_title = "Semantic Search Query",
-			finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
+			finder = finders.new_oneshot_job({
+				"source ~/reddy/semantic-code-search/venv/bin/activate && sem " .. "check",
+			}, opts),
 			-- finder = finders.new_table({
 			-- 	results = {
 			-- 		{ "red", "#ff0000" },
@@ -60,7 +40,6 @@ local colors = function(opts)
 		:find()
 end
 
+-- to execute the function
+--colors()
 colors(require("telescope.themes").get_dropdown({}))
-P("--------------------------------------------------")
-get_semantic_search_output({}, {})
-P("--------------------------------------------------")
