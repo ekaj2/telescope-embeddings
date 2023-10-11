@@ -2,8 +2,6 @@ local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local utils = require("telescope.utils")
-local previewers = require("telescope.previewers")
-local actions = require("telescope.actions")
 
 Log = function(x, inspect)
 	inspect = inspect or false
@@ -39,10 +37,6 @@ local get_semantic_search_output = function(args, opts)
 	Log("Parsing the semantic search output")
 	Log(result[1], true)
 
-	-- Replace single quotes with double quotes and escape the inner double quotes
-	--local corrected_str = string.gsub(result[1], "'", '"')
-	--Log("\nCorrected String:")
-	--Log(corrected_str, true)
 	-- Convert the corrected JSON string to a Lua table
 	local lua_table = vim.fn.json_decode(result[1])
 
@@ -93,30 +87,8 @@ local semantic_picker = function(opts)
 	pickers
 		.new(opts, {
 			prompt_title = "Semantic Search Query",
-			--finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
-			finder = finders.new_oneshot_job({}, opts), -- Initialize an empty job for now
-
-			--finder = finders.new_dynamic({
-			--	fn = function(prompt_text, _)
-			--		Log("1) Checking prompt guard: ")
-			--		Log(prompt_text, true)
-			--		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
-			--			Log("Prompt guard failed")
-			--			return {}
-			--		end
-			--		return get_semantic_search_output(prompt_text, opts)
-			--	end,
-			--	entry_maker = function(line)
-			--		Log("\nGot line:")
-			--		Log(line, true)
-			--		return {
-			--			value = line.filename,
-			--			ordinal = line.ordinal,
-			--			display = line.display,
-			--			code = line.value,
-			--		}
-			--	end,
-			--}),
+			-- Initialiaze the finder with an empty table
+			finder = finders.new_oneshot_job({}, opts),
 			-- use the default file previewer
 			previewer = conf.file_previewer(opts),
 			attach_mappings = function(_, map)
@@ -147,11 +119,6 @@ local semantic_picker = function(opts)
 				-- needs to return true to map default_mappings
 				return true
 			end,
-			-- mappings = {
-			-- 	n = {
-			-- 		["<cr>"] = function(prompt_bufnr) end,
-			-- 	},
-			-- },
 		})
 		:find()
 end
