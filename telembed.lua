@@ -80,36 +80,50 @@ Log("Hello")
 
 local semantic_picker = function(opts)
 	opts = opts or {}
+
+	local function run_search(prompt_bufnr)
+		local state = require("telescope.actions.state")
+		Log(prompt_bufnr)
+		local prompt_text = state.get_current_line(prompt_bufnr)
+		Log(prompt_text)
+		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
+			Log("Prompt guard failed")
+			return {}
+		end
+		local search_results = get_semantic_search_output(prompt_text, opts)
+		-- Set the picker results to the search results
+		local picker = state.get_current_picker(prompt_bufnr)
+		picker.finder = finders.new_table({
+			results = search_results,
+			entry_maker = function(line)
+				Log("\nGot line:")
+				Log(line, true)
+				return {
+					value = line.filename,
+					ordinal = line.ordinal,
+					display = line.display,
+					code = line.value,
+				}
+			end,
+		})
+		picker:refresh()
+	end
+
 	pickers
 		.new(opts, {
-			prompt_title = "Semantic Search Query",
-			--finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
-			finder = finders.new_dynamic({
-				fn = function(prompt_text, _)
-					Log("1) Checking prompt guard: ")
-					Log(prompt_text, true)
-					if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
-						Log("Prompt guard failed")
-						return {}
-					end
-					return get_semantic_search_output(prompt_text, opts)
-				end,
-				entry_maker = function(line)
-					Log("\nGot line:")
-					Log(line, true)
-					return {
-						value = line.filename,
-						ordinal = line.ordinal,
-						display = line.display,
-						code = line.value,
-					}
-				end,
-			}),
+			prompt_title = "Semantic Search Query (hit Enter to update search)",
+			-- Initialize an empty job for now
+			finder = finders.new_oneshot_job({}, opts),
+			attach_mappings = function(_, map)
+				map("i", "<cr>", function(prompt_bufnr)
+					run_search(prompt_bufnr)
+				end)
+
+				-- needs to return true to map default_mappings
+				return true
+			end,
 			-- use the default file previewer
 			previewer = conf.file_previewer(opts),
-			--previewer = previewers.vim_buffer_cat.new(opts),
-			-- use the cat previewer
-			--previewer = previewers.cat.new(opts),
 		})
 		:find()
 end
