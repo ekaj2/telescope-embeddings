@@ -2,6 +2,7 @@ local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local utils = require("telescope.utils")
+local previewers = require("telescope.previewers")
 
 Log = function(x, inspect)
 	inspect = inspect or false
@@ -18,8 +19,6 @@ Log = function(x, inspect)
 		Log(vim.inspect(x))
 	end
 end
-
-local previewers = require("telescope.previewers")
 
 P = function(x, inspect)
 	inspect = inspect or false
@@ -79,8 +78,7 @@ end
 
 Log("Hello")
 
--- our picker function: colors
-local colors = function(opts)
+local semantic_picker = function(opts)
 	opts = opts or {}
 	pickers
 		.new(opts, {
@@ -103,22 +101,20 @@ local colors = function(opts)
 						value = line.filename,
 						ordinal = line.ordinal,
 						display = line.display,
+						code = line.value,
 					}
 				end,
 			}),
-			-- I think I can get by without a sorter b/c I have an int ordinal?
-			--sorter = conf.generic_sorter(opts),
-			previewer = previewers.new_buffer_previewer({
-				define_preview = function(self, entry, status)
-					self.state.bufnr = vim.api.nvim_create_buf(false, true)
-					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { entry[2] })
-				end,
-			}),
+			-- use the default file previewer
+			previewer = conf.file_previewer(opts),
+			--previewer = previewers.vim_buffer_cat.new(opts),
+			-- use the cat previewer
+			--previewer = previewers.cat.new(opts),
 		})
 		:find()
 end
 
-colors(require("telescope.themes").get_dropdown({}))
+semantic_picker(require("telescope.themes").get_dropdown({}))
 P("--------------------------------------------------")
 --get_semantic_search_output({}, {})
 P("--------------------------------------------------")
