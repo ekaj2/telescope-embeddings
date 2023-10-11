@@ -71,54 +71,53 @@ local get_semantic_search_output = function(args, opts)
 	return results
 end
 
-Log("Hello")
-
 local semantic_picker = function(opts)
 	opts = opts or {}
 
-	local function run_search(prompt_text)
+	local function run_search(prompt_bufnr)
+		local state = require("telescope.actions.state")
+		local prompt_text = state.get_current_line(prompt_bufnr)
 		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
 			Log("Prompt guard failed")
 			return {}
 		end
-		return get_semantic_search_output(prompt_text, opts)
+		local search_results = get_semantic_search_output(prompt_text, opts)
+		-- Set the picker results to the search results
+		local picker = state.get_current_picker(prompt_bufnr)
+		picker.finder = finders.new_table({
+			results = search_results,
+			entry_maker = function(line)
+				Log("\nGot line:")
+				Log(line, true)
+				return {
+					value = line.filename,
+					ordinal = line.ordinal,
+					display = line.display,
+					code = line.value,
+				}
+			end,
+		})
+		picker:refresh()
 	end
 
 	pickers
 		.new(opts, {
 			prompt_title = "Semantic Search Query",
-			-- Initialiaze the finder with an empty table
+			-- Initialize the finder with an empty table
 			finder = finders.new_oneshot_job({}, opts),
 			-- use the default file previewer
-			previewer = conf.file_previewer(opts),
 			attach_mappings = function(_, map)
 				map("i", "<cr>", function(prompt_bufnr)
-					Log("Got here")
-					local state = require("telescope.actions.state")
-					local prompt_text = state.get_current_line(prompt_bufnr)
-					local search_results = run_search(prompt_text)
-
-					-- Set the picker results to the search results
-					local picker = state.get_current_picker(prompt_bufnr)
-					picker.finder = finders.new_table({
-						results = search_results,
-						entry_maker = function(line)
-							Log("\nGot line:")
-							Log(line, true)
-							return {
-								value = line.filename,
-								ordinal = line.ordinal,
-								display = line.display,
-								code = line.value,
-							}
-						end,
-					})
-					picker:refresh()
+					run_search(prompt_bufnr)
+				end)
+				map("n", "<cr>", function(prompt_bufnr)
+					run_search(prompt_bufnr)
 				end)
 
 				-- needs to return true to map default_mappings
 				return true
 			end,
+			previewer = conf.file_previewer(opts),
 		})
 		:find()
 end
