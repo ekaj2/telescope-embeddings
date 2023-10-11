@@ -106,20 +106,6 @@ local colors = function(opts)
 					}
 				end,
 			}),
-			-- finder = finders.new_table({
-			-- 	results = {
-			-- 		{ "red", "#ff0000" },
-			-- 		{ "green", "#00ff00" },
-			-- 		{ "blue", "#0000ff" },
-			-- 	},
-			-- 	entry_maker = function(entry)
-			-- 		return {
-			-- 			value = entry,
-			-- 			display = entry[1],
-			-- 			ordinal = entry[1],
-			-- 		}
-			-- 	end,
-			-- }),
 			-- I think I can get by without a sorter b/c I have an int ordinal?
 			--sorter = conf.generic_sorter(opts),
 			previewer = previewers.new_buffer_previewer({
