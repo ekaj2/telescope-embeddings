@@ -3,6 +3,22 @@ local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local utils = require("telescope.utils")
 
+Log = function(x, inspect)
+	inspect = inspect or false
+	local file = io.open("./jake-telescope.log", "a")
+	if file == nil then
+		print("Could not open file")
+		return
+	end
+
+	file:write(tostring(x) .. "\n")
+	file:close()
+
+	if inspect then
+		Log(vim.inspect(x))
+	end
+end
+
 local previewers = require("telescope.previewers")
 
 P = function(x, inspect)
@@ -15,19 +31,21 @@ P = function(x, inspect)
 end
 
 local get_semantic_search_output = function(args, opts)
-	P(opts, true)
-	-- .. args[1] may be the prompt?
-	-- print out this result
-	P("Getting the semantic search output")
+	Log("Getting the semantic search output")
 	local result = utils.get_os_command_output(
 		{ "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" },
 		opts.cwd
 	)
-	P(result, true)
+	Log("Finished processing the semantic search output")
+	Log(result, true)
+	return result
+	--P(result, true)
 	--local cmd = { "find", ".", "-type", "f", "-name", "*.*" }
-	local cmd = { "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" }
+	--local cmd = { "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" }
 	--return cmd
 end
+
+Log("Hello")
 
 -- our picker function: colors
 local colors = function(opts)
@@ -35,7 +53,25 @@ local colors = function(opts)
 	pickers
 		.new(opts, {
 			prompt_title = "Semantic Search Query",
-			finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
+			--finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
+			finder = finders.new_dynamic({
+				fn = function(prompt_text, _)
+					Log("1) Checking prompt guard: ")
+					Log(prompt_text, true)
+					if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
+						Log("Prompt guard failed")
+						return {}
+					end
+					return get_semantic_search_output(prompt_text, opts)
+				end,
+				entry_maker = function(line)
+					return {
+						value = line,
+						ordinal = line,
+						display = line,
+					}
+				end,
+			}),
 			-- finder = finders.new_table({
 			-- 	results = {
 			-- 		{ "red", "#ff0000" },
@@ -65,5 +101,5 @@ end
 
 colors(require("telescope.themes").get_dropdown({}))
 P("--------------------------------------------------")
-get_semantic_search_output({}, {})
+--get_semantic_search_output({}, {})
 P("--------------------------------------------------")
