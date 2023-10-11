@@ -144,31 +144,31 @@ end
 --semantic_picker(themes.get_dropdown({}))
 --semantic_picker(require("telescope.themes").get_dropdown({}))
 
-semantic_picker({
-	defaults = {
+semantic_picker(themes.get_ivy({
 
-		buffer_previewer_maker = new_maker,
-		-- see: https://github.com/nvim-telescope/telescope.nvim/issues/1379#issuecomment-996590765
-		preview = {
-			treesitter = false,
+	buffer_previewer_maker = new_maker,
+	-- see: https://github.com/nvim-telescope/telescope.nvim/issues/1379#issuecomment-996590765
+	preview = {
+		treesitter = false,
+	},
+	log_level = "debug",
+	mappings = {
+		i = {
+			["<C-c>"] = require("telescope.actions").close,
 		},
-		log_level = "debug",
-		mappings = {
-			i = {
-				["<C-c>"] = require("telescope.actions").close,
-			},
-			n = {
-				["<C-c>"] = require("telescope.actions").close,
-			},
-		},
-		layout_strategy = "horizontal",
-		layout_config = {
-			width = 0.6,
-			height = 0.6,
-			--prompt_position = "bottom",
+		n = {
+			["<C-c>"] = require("telescope.actions").close,
 		},
 	},
-})
+	--layout_strategy = "vertical",
+	--layout_config = {
+	--	anchor = "top",
+	--	width = 0.8,
+	--	height = 0.8,
+	--	prompt_position = "top",
+	--	mirror = true,
+	--},
+}))
 
 P("--------------------------------------------------")
 --get_semantic_search_output({}, {})
