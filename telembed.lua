@@ -19,11 +19,14 @@ local get_semantic_search_output = function(args, opts)
 	-- .. args[1] may be the prompt?
 	-- print out this result
 	P("Getting the semantic search output")
-	local result = utils.get_os_command_output({ "find", ".", "-type", "f", "-name", "*.py" }, opts.cwd)
+	local result = utils.get_os_command_output(
+		{ "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" },
+		opts.cwd
+	)
 	P(result, true)
 	--local cmd = { "find", ".", "-type", "f", "-name", "*.*" }
-	local cmd = { "~/reddy/semantic-code-search/venv/bin/sem", "test" }
-	return cmd
+	local cmd = { "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" }
+	--return cmd
 end
 
 -- our picker function: colors
