@@ -3,6 +3,7 @@ local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local utils = require("telescope.utils")
 local previewers = require("telescope.previewers")
+local actions = require("telescope.actions")
 
 Log = function(x, inspect)
 	inspect = inspect or false
@@ -81,49 +82,76 @@ Log("Hello")
 local semantic_picker = function(opts)
 	opts = opts or {}
 
-	local function run_search(prompt_bufnr)
-		local state = require("telescope.actions.state")
-		Log(prompt_bufnr)
-		local prompt_text = state.get_current_line(prompt_bufnr)
-		Log(prompt_text)
+	local function run_search(prompt_text)
 		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
 			Log("Prompt guard failed")
 			return {}
 		end
-		local search_results = get_semantic_search_output(prompt_text, opts)
-		-- Set the picker results to the search results
-		local picker = state.get_current_picker(prompt_bufnr)
-		picker.finder = finders.new_table({
-			results = search_results,
-			entry_maker = function(line)
-				Log("\nGot line:")
-				Log(line, true)
-				return {
-					value = line.filename,
-					ordinal = line.ordinal,
-					display = line.display,
-					code = line.value,
-				}
-			end,
-		})
-		picker:refresh()
+		return get_semantic_search_output(prompt_text, opts)
 	end
 
 	pickers
 		.new(opts, {
-			prompt_title = "Semantic Search Query (hit Enter to update search)",
-			-- Initialize an empty job for now
-			finder = finders.new_oneshot_job({}, opts),
+			prompt_title = "Semantic Search Query",
+			--finder = finders.new_oneshot_job(get_semantic_search_output(opts[1], opts), opts),
+			finder = finders.new_oneshot_job({}, opts), -- Initialize an empty job for now
+
+			--finder = finders.new_dynamic({
+			--	fn = function(prompt_text, _)
+			--		Log("1) Checking prompt guard: ")
+			--		Log(prompt_text, true)
+			--		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
+			--			Log("Prompt guard failed")
+			--			return {}
+			--		end
+			--		return get_semantic_search_output(prompt_text, opts)
+			--	end,
+			--	entry_maker = function(line)
+			--		Log("\nGot line:")
+			--		Log(line, true)
+			--		return {
+			--			value = line.filename,
+			--			ordinal = line.ordinal,
+			--			display = line.display,
+			--			code = line.value,
+			--		}
+			--	end,
+			--}),
+			-- use the default file previewer
+			previewer = conf.file_previewer(opts),
 			attach_mappings = function(_, map)
 				map("i", "<cr>", function(prompt_bufnr)
-					run_search(prompt_bufnr)
+					Log("Got here")
+					local state = require("telescope.actions.state")
+					local prompt_text = state.get_current_line(prompt_bufnr)
+					local search_results = run_search(prompt_text)
+
+					-- Set the picker results to the search results
+					local picker = state.get_current_picker(prompt_bufnr)
+					picker.finder = finders.new_table({
+						results = search_results,
+						entry_maker = function(line)
+							Log("\nGot line:")
+							Log(line, true)
+							return {
+								value = line.filename,
+								ordinal = line.ordinal,
+								display = line.display,
+								code = line.value,
+							}
+						end,
+					})
+					picker:refresh()
 				end)
 
 				-- needs to return true to map default_mappings
 				return true
 			end,
-			-- use the default file previewer
-			previewer = conf.file_previewer(opts),
+			-- mappings = {
+			-- 	n = {
+			-- 		["<cr>"] = function(prompt_bufnr) end,
+			-- 	},
+			-- },
 		})
 		:find()
 end
