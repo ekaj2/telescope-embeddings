@@ -4,7 +4,13 @@ local conf = require("telescope.config").values
 local utils = require("telescope.utils")
 local themes = require("telescope.themes")
 
+local enable_logging = false
+
 Log = function(x, inspect)
+	if not enable_logging then
+		return
+	end
+
 	inspect = inspect or false
 	local file = io.open("./jake-telescope.log", "a")
 	if file == nil then
@@ -17,15 +23,6 @@ Log = function(x, inspect)
 
 	if inspect then
 		Log(vim.inspect(x))
-	end
-end
-
-P = function(x, inspect)
-	inspect = inspect or false
-	vim.api.nvim_echo({ { tostring(x), "None" } }, false, {})
-
-	if inspect then
-		P(vim.inspect(x))
 	end
 end
 
@@ -141,10 +138,7 @@ local new_maker = function(filepath, bufnr, opts)
 	end)
 end
 
---semantic_picker(themes.get_dropdown({}))
---semantic_picker(require("telescope.themes").get_dropdown({}))
-
-semantic_picker(themes.get_ivy({
+semantic_picker(themes.get_dropdown({
 
 	buffer_previewer_maker = new_maker,
 	-- see: https://github.com/nvim-telescope/telescope.nvim/issues/1379#issuecomment-996590765
@@ -160,16 +154,25 @@ semantic_picker(themes.get_ivy({
 			["<C-c>"] = require("telescope.actions").close,
 		},
 	},
-	--layout_strategy = "vertical",
-	--layout_config = {
-	--	anchor = "top",
-	--	width = 0.8,
-	--	height = 0.8,
-	--	prompt_position = "top",
-	--	mirror = true,
-	--},
+	layout_strategy = "horizontal",
+	layout_config = {
+		anchor = "CENTER", -- see :h telescope.resolver.resolve_anchor_pos()
+		width = 0.8,
+		height = 0.8,
+		prompt_position = "top",
+		mirror = false, -- switch the preview pane with the prompt/results pane
+	},
+	border = true,
+	borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+	prompt = {
+		-- Change 'fg' and 'bg' to the colors you want
+		fg = "cyan",
+		bg = "black",
+	},
+	selection_caret = "+ ",
 }))
 
-P("--------------------------------------------------")
---get_semantic_search_output({}, {})
-P("--------------------------------------------------")
+--local colors = require("rose-pine.palette")
+--Log(colors, true)
+--vim.api.nvim_set_hl(0, "TelescopePromptBorder", { fg = colors.pine })
+--vim.api.nvim_set_hl(0, "TelescopePromptTitle", { fg = colors.rose })
