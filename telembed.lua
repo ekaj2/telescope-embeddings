@@ -40,9 +40,11 @@ local get_semantic_search_output = function(args, opts)
 	Log(result[1], true)
 
 	-- Replace single quotes with double quotes and escape the inner double quotes
-	local corrected_str = string.gsub(result[1], "'", '"')
+	--local corrected_str = string.gsub(result[1], "'", '"')
+	--Log("\nCorrected String:")
+	--Log(corrected_str, true)
 	-- Convert the corrected JSON string to a Lua table
-	local lua_table = vim.fn.json_decode(corrected_str)
+	local lua_table = vim.fn.json_decode(result[1])
 
 	Log("Finished json decode")
 	Log(lua_table, true)
