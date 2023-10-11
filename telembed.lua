@@ -74,6 +74,7 @@ local semantic_picker = function(opts)
 
 	local function run_search(prompt_bufnr)
 		local state = require("telescope.actions.state")
+		-- Log("Buffer number: " .. tostring(prompt_bufnr))
 		local prompt_text = state.get_current_line(prompt_bufnr)
 		if #prompt_text < 3 then -- Change this if you want a different minimum character requirement
 			Log("Prompt guard failed")
