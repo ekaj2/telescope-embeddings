@@ -32,10 +32,8 @@ end
 
 local get_semantic_search_output = function(args, opts)
 	Log("Getting the semantic search output")
-	local result = utils.get_os_command_output(
-		{ "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", "where do I get the mean" },
-		opts.cwd
-	)
+	local result =
+		utils.get_os_command_output({ "/Users/eagle/reddy/semantic-code-search/venv/bin/sem", args }, opts.cwd)
 	Log("Finished processing the semantic search output")
 	Log(result, true)
 	Log("Parsing the semantic search output")
@@ -48,7 +46,32 @@ local get_semantic_search_output = function(args, opts)
 
 	Log("Finished json decode")
 	Log(lua_table, true)
-	return result
+
+	local results = {}
+	Log("\nBuilding updated list:")
+	for _, line in ipairs(lua_table) do
+		Log(line, true)
+		local similarity = line[1]
+		local filename = line[2]
+		local linenum = line[3]
+		local code = line[4]
+		Log("Similarity: " .. tostring(similarity))
+		Log("Filename: " .. tostring(filename))
+		Log("Line number: " .. tostring(linenum))
+		Log("Code: " .. tostring(code))
+		table.insert(results, {
+			value = code,
+			ordinal = code,
+			display = filename .. ":" .. linenum .. ": " .. code .. " (" .. similarity .. ")",
+			filename = filename,
+			lnum = linenum,
+		})
+	end
+
+	Log("\nFinal result:")
+	Log(results, true)
+
+	return results
 end
 
 Log("Hello")
@@ -74,9 +97,9 @@ local colors = function(opts)
 					Log("\nGot line:")
 					Log(line, true)
 					return {
-						value = line[2],
-						ordinal = line[2],
-						display = line[2],
+						value = line.filename,
+						ordinal = line.filename,
+						display = line.display,
 					}
 				end,
 			}),
